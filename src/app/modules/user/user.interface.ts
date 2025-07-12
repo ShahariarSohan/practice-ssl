@@ -13,7 +13,7 @@ export enum IsActive{
     BLOCKED="BLOCKED"
 }
 export interface IAuthProvider{
-    provider: string;
+    provider: "google"|"credentials";
     providerId: string;
 }
 export interface IUser {
