@@ -6,6 +6,9 @@ import { NextFunction, Request, Response } from 'express';
 import { authServices } from './auth.service';
 import AppError from '../../errorHelpers/appError';
 import { setAuthCookie } from '../../utils/setCookie';
+import { JwtPayload } from 'jsonwebtoken';
+import { createUserTokens } from '../../utils/userTokens';
+import { envVars } from '../../config/env';
 
 const credentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -65,7 +68,7 @@ const resetPassword = catchAsync(
     const oldPassword = req.body.oldPassword;
     const newPassword = req.body.newPassword;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  await authServices.resetPassword(oldPassword,newPassword,decodedToken!)
+  await authServices.resetPassword(oldPassword,newPassword,decodedToken as JwtPayload)
    
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
@@ -75,10 +78,24 @@ const resetPassword = catchAsync(
     });
   }
 );
+const googleCallbackController = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+    const user = req.user
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND,"User not found")
+    }
+    const tokenInfo = createUserTokens(user)
+    setAuthCookie(res,tokenInfo)
+    console.log("Redirecting to:", envVars.FRONTEND_URL);
+    res.redirect(envVars.FRONTEND_URL)
+  }
+);
 
 export const authControllers = {
   credentialsLogin,
   getNewAccessToken,
   logout,
-  resetPassword
+  resetPassword,
+  googleCallbackController
 }

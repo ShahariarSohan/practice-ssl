@@ -3,6 +3,7 @@ import cors from "cors";
 import { router } from "./app/routes";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/notFound";
+import "./app/config/passport"
 import cookieParser from "cookie-parser";
 import passport from "passport";
 import expressSession from "express-session"
