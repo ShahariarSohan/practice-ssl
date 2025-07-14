@@ -58,9 +58,27 @@ const logout = catchAsync(
     });
   }
 );
+const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+    const decodedToken=req.user
+    const oldPassword = req.body.oldPassword;
+    const newPassword = req.body.newPassword;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  await authServices.resetPassword(oldPassword,newPassword,decodedToken!)
+   
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Password updated Successfully",
+      data: null,
+    });
+  }
+);
 
 export const authControllers = {
   credentialsLogin,
   getNewAccessToken,
-  logout
+  logout,
+  resetPassword
 }
