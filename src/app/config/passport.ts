@@ -25,7 +25,7 @@ passport.use(
             let user = await User.findOne({ email });
             if (!user) {
                 user = await User.create({
-                    email,
+                    email:email,
                     name: profile.displayName,
                     picture: profile.photos?.[0].value,
                     role: Role.USER,
@@ -45,3 +45,19 @@ passport.use(
     }
   )
 );
+
+passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
+    done(null,user._id)
+})   
+
+passport.deserializeUser(async (id: string, done: any) => {
+    try {
+        const user = await User.findById(id)
+        done(null,user)
+    }
+    catch (error) {
+        console.log(error)
+        done(error)
+        
+    }
+})
