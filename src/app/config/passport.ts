@@ -37,10 +37,11 @@ passport.use(
                         }
                     ]
                     })
-            }
+          }
+           return done(null, user);
         } catch (error) {
             console.log("google strategy error",error)
-          return  done(error)
+          return  done(error,false)
         }
     }
   )
@@ -58,6 +59,5 @@ passport.deserializeUser(async (id: string, done: any) => {
     catch (error) {
         console.log(error)
         done(error)
-        
     }
 })
