@@ -1,11 +1,45 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import  bcrypt  from 'bcryptjs';
+
 import passport from "passport";
-import { Strategy as googleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
+import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
 import { Role } from "../modules/user/user.interface";
+import { Strategy as LocalStrategy  } from "passport-local";
+
 
 passport.use(
-  new googleStrategy(
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password"
+    }, async (email: string, password: string, done) => {
+      try {
+        const isUserExist = await User.findOne({ email })
+         if (!isUserExist){
+          return done(null,false,{message:"User doesn't exist"})
+        }
+       
+        const isGoogleAuthenticated = isUserExist.auths.some(providerObject => providerObject.provider === "google")
+        if (isGoogleAuthenticated && !isUserExist.password) {
+          return done("You are already google logged in so if you want to login with email and password ,at first you have to login with google and then set a password then you can login with email and password")
+        }
+        const isPasswordMatched = await bcrypt.compare(password as string, isUserExist?.password as string)
+        if (!isPasswordMatched) {
+         return done(null,false,{message:"Password doesn't match "})
+        }
+        return done(null,isUserExist)
+      }
+      catch (error) {
+        console.log(error)
+        return done(error)
+      }
+    }
+  )
+)
+passport.use(
+  new GoogleStrategy(
     {
       clientID: envVars.GOOGLE_CLIENT_ID,
       clientSecret: envVars.GOOGLE_CLIENT_SECRET,
@@ -41,7 +75,7 @@ passport.use(
            return done(null, user);
         } catch (error) {
             console.log("google strategy error",error)
-          return  done(error,false)
+           return done(error)
         }
     }
   )

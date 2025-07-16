@@ -6,6 +6,7 @@ import httpStatus from "http-status-codes";
 import { userServices } from "./user.service";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
+import { JwtPayload } from "jsonwebtoken";
 
 
 
@@ -45,7 +46,7 @@ const updateUser = catchAsync(
     const updatedUser = await userServices.updateUser(
       userId,
       payload,
-      verifiedToken
+      verifiedToken as JwtPayload
     );
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
