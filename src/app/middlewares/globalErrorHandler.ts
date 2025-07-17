@@ -18,33 +18,37 @@ export const globalErrorHandler = (
   let statusCode = 500;
   let message = `Something Went Wrong`;
   let errorSources: IErrorSources[] = [];
-//Duplicate Error
+
+  if (envVars.NODE_ENV === "development") {
+    console.log(err);
+  }
+  //Duplicate Error
   if (err.code === 11000) {
     const simplifiedError = handleDuplicateError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
   }
-    //Zod Error
+  //Zod Error
   else if (err.name === "ZodError") {
-      const simplifiedError = handleZodError(err)
-      
+    const simplifiedError = handleZodError(err);
+
     statusCode = simplifiedError.statusCode;
-      message = simplifiedError.message;
-      errorSources = simplifiedError.errorSources as IErrorSources[];
+    message = simplifiedError.message;
+    errorSources = simplifiedError.errorSources as IErrorSources[];
   }
   // Validation Error
   else if (err.name === "ValidationError") {
-      const simplifiedError=handleValidationError(err)
+    const simplifiedError = handleValidationError(err);
     statusCode = simplifiedError.statusCode;
-      message = simplifiedError.message;
-      errorSources = simplifiedError.errorSources as IErrorSources[];
+    message = simplifiedError.message;
+    errorSources = simplifiedError.errorSources as IErrorSources[];
   }
   //Cast Error
   else if (err.name === "CastError") {
     const simplifiedError = handleCastError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
-  }// App Error
+  } // App Error
   else if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
@@ -55,8 +59,8 @@ export const globalErrorHandler = (
   res.status(statusCode).json({
     success: false,
     message,
-    err: envVars.NODE_ENV === "development" ? err : null,
     errorSources,
+    err: envVars.NODE_ENV === "development" ? err : null,
     stack: envVars.NODE_ENV === "development" ? err.stack : null,
   });
 };
