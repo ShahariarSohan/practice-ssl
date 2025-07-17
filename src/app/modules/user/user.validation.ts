@@ -2,9 +2,10 @@ import z from "zod";
 import { IsActive, Role } from "./user.interface";
 
 export const createUserZodSchema = z.object({
-  name: z.string({ invalid_type_error: "Name must be string" })
-        .min(5, { message: "Name must be  at least 5 characters" })
-        .max(50, { message: "Name must be maximum of 50 characters" }),
+  name: z
+    .string({ invalid_type_error: "Name must be string" })
+    .min(5, { message: "Name must be  at least 5 characters" })
+    .max(50, { message: "Name must be maximum of 50 characters" }),
   email: z
     .string({ invalid_type_error: " Email must be string" })
     .email({ message: "Email is invalid" })
@@ -57,7 +58,7 @@ export const updateUserZodSchema = z.object({
     .boolean({ invalid_type_error: "isVerified must be true or false" })
     .optional(),
   role: z.enum(Object.values(Role) as [string]).optional(),
-  isActive:z.enum(Object.values(IsActive)as [string]).optional(),
+  isActive: z.enum(Object.values(IsActive) as [string]).optional(),
   phone: z
     .string({ invalid_type_error: " Phone must be string" })
     .regex(/^(?:\+88|88)?01[3-9]\d{8}$/, {

@@ -10,7 +10,7 @@ import { JwtPayload } from "jsonwebtoken";
 
 
 
-
+//sends a function as an argument in catchAsync
 const createUser = catchAsync(async (req: Request, res: Response,next:NextFunction) => {
 
     
