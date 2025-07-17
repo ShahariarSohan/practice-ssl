@@ -18,27 +18,34 @@ export const globalErrorHandler = (
   let statusCode = 500;
   let message = `Something Went Wrong`;
   let errorSources: IErrorSources[] = [];
-
+//Duplicate Error
   if (err.code === 11000) {
     const simplifiedError = handleDuplicateError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
-  } else if (err.name === "ZodError") {
+  }
+    //Zod Error
+  else if (err.name === "ZodError") {
       const simplifiedError = handleZodError(err)
       
     statusCode = simplifiedError.statusCode;
       message = simplifiedError.message;
       errorSources = simplifiedError.errorSources as IErrorSources[];
-  } else if (err.name === "ValidationError") {
+  }
+  // Validation Error
+  else if (err.name === "ValidationError") {
       const simplifiedError=handleValidationError(err)
     statusCode = simplifiedError.statusCode;
       message = simplifiedError.message;
       errorSources = simplifiedError.errorSources as IErrorSources[];
-  } else if (err.name === "CastError") {
+  }
+  //Cast Error
+  else if (err.name === "CastError") {
     const simplifiedError = handleCastError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
-  } else if (err instanceof AppError) {
+  }// App Error
+  else if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
   } else if (err instanceof Error) {
