@@ -32,7 +32,7 @@ const getAllTourType = catchAsync(
 );
 const updateTourType = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
- 
+
   const result = await tourServices.updateTourType(id, req.body);
   sendResponse(res, {
     statusCode: httpStatus.ACCEPTED,
@@ -51,9 +51,61 @@ const deleteTourType = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+/// tour controller
+const createTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await tourServices.createTour(req.body);
+
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Tour created Successfully",
+      data: result,
+    });
+  }
+);
+const getAllTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await tourServices.getAllTour(req.query as Record<string,string>);
+    sendResponse(res, {
+      statusCode: httpStatus.ACCEPTED,
+      success: true,
+      message: "Tours  Retrieved Successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  }
+);
+const updateTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const result = await tourServices.updateTour(id, req.body);
+
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Tour updated Successfully",
+      data: result,
+    });
+  }
+);
+const deleteTour = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await tourServices.deleteTour(id);
+  sendResponse(res, {
+    statusCode: httpStatus.ACCEPTED,
+    success: true,
+    message: "Tour deleted successfully",
+    data: result,
+  });
+});
 export const tourControllers = {
   createTourType,
-    getAllTourType,
-    updateTourType,
-  deleteTourType
+  getAllTourType,
+  updateTourType,
+  deleteTourType,
+  createTour,
+  getAllTour,
+  updateTour,
+  deleteTour,
 };
