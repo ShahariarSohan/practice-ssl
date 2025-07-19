@@ -4,7 +4,7 @@ import { IDivision } from "./division.interface";
 const divisionSchema = new Schema<IDivision>(
   {
     name: { type: String, required: true, unique: true },
-    slug: { type: String, unique:true },
+    slug: { type: String, unique: true },
     thumbnail: { type: String },
     description: { type: String },
   },
@@ -23,20 +23,21 @@ divisionSchema.pre("save", async function (next) {
     }
     this.slug = slug;
   }
-  next()
-})
+  next();
+});
 divisionSchema.pre("findOneAndUpdate", async function (next) {
+  const division = this.getUpdate() as Partial<IDivision>;
+  if (division.name) {
+    const baseSlug = division.name?.toLocaleLowerCase().split(" ").join("-");
+    let slug = `${baseSlug}-division`;
+    let counter = 0;
+    while (await Division.exists({ slug })) {
+      slug = `${baseSlug}-division-${counter++}`;
+    }
+    division.slug = slug;
+    this.setUpdate(division);
+  }
   
-  const division = this.getUpdate() as Partial<IDivision>
-   if (division.name) {
-     const baseSlug = division.name?.toLocaleLowerCase().split(" ").join("-");
-     let slug = `${baseSlug}-division`;
-     let counter = 0;
-     while (await Division.exists({ slug })) {
-       slug = `${baseSlug}-division-${counter++}`;
-     }
-     division.slug = slug;
-   }
-  next()
-})
+  next();
+});
 export const Division = model<IDivision>("Division", divisionSchema);

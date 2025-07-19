@@ -2,6 +2,7 @@ import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/appError";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
+import { tourSearchAbleFields } from "./tour.constant";
 ///tour type services
 const createTourType = async (payload: ITourType) => {
   const isTourType = await TourType.findOne({ name: payload.name });
@@ -62,8 +63,17 @@ const createTour = async (payload: Partial<ITour>) => {
   return tour;
 };
 const getAllTour = async (query: Record<string, string>) => {
-  const filter=query
-  const tours = await Tour.find(filter);
+  const filter = query;
+  const searchTerm = query.searchTerm || "";
+  delete filter["searchTerm"]
+
+
+  const searchQuery ={ $or:tourSearchAbleFields.map((field) => ({
+    [field]: { $regex: searchTerm, $options: "i" },
+  }))
+  }
+  
+  const tours = await Tour.find(searchQuery).find(filter);
   const totalTours = await Tour.countDocuments();
   return {
     data: tours,

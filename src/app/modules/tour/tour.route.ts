@@ -27,14 +27,13 @@ router.delete(
 );
 
 //// tour Api ///////
-
+router.get("/", tourControllers.getAllTour);
 router.post(
   "/create",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(createTourZodSchema),
   tourControllers.createTour
 );
-router.get("/",tourControllers.getAllTour)
 router.patch(
   "/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),

@@ -10,13 +10,13 @@ import { Role } from "../user/user.interface";
 
 const router = Router();
 
+router.get("/", divisionControllers.getAllDivision);
 router.post(
   "/create",
   checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
   validateRequest(createDivisionZodSchema),
   divisionControllers.createDivision
 );
-router.get("/", divisionControllers.getAllDivision);
 router.get("/:slug", divisionControllers.getSingleDivision);
 router.patch(
   "/:id",
@@ -24,5 +24,9 @@ router.patch(
   validateRequest(updateDivisionZodSchema),
   divisionControllers.updateDivision
 );
-router.delete("/:id", checkAuth(Role.SUPER_ADMIN, Role.ADMIN),divisionControllers.deleteDivision);
+router.delete(
+  "/:id",
+  checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
+  divisionControllers.deleteDivision
+);
 export const divisionRoutes = router;
