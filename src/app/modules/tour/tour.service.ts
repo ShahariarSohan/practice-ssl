@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
 import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/appError";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 import { tourSearchAbleFields } from "./tour.constant";
+import { excludeFields } from "../../utils/constants";
 ///tour type services
 const createTourType = async (payload: ITourType) => {
   const isTourType = await TourType.findOne({ name: payload.name });
@@ -65,15 +67,22 @@ const createTour = async (payload: Partial<ITour>) => {
 const getAllTour = async (query: Record<string, string>) => {
   const filter = query;
   const searchTerm = query.searchTerm || "";
-  delete filter["searchTerm"]
-
-
+  const sort =query.sort||"-createdAt"
+  const fields = query.fields?.split(",").join(" ") || ""
+  const page = Number(query.page) || 1
+  const limit = Number(query.limit) || 5
+ 
+  const skip = (page - 1) * limit
+  
+  for (const field of excludeFields) {
+  delete filter[field]
+}
   const searchQuery ={ $or:tourSearchAbleFields.map((field) => ({
     [field]: { $regex: searchTerm, $options: "i" },
   }))
   }
   
-  const tours = await Tour.find(searchQuery).find(filter);
+  const tours = await Tour.find(searchQuery).find(filter).sort(sort).select(fields).skip(skip).limit(limit);
   const totalTours = await Tour.countDocuments();
   return {
     data: tours,
@@ -82,6 +91,8 @@ const getAllTour = async (query: Record<string, string>) => {
     },
   };
 };
+
+
 const updateTour = async (id: string, payload: ITour) => {
   const isTourExist = await Tour.findById(id);
   if (!isTourExist) {
