@@ -19,7 +19,7 @@ const createDivision = catchAsync(
 );
 const getAllDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await divisionServices.getAllDivision();
+    const result = await divisionServices.getAllDivision(req.query as Record<string,string>);
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
