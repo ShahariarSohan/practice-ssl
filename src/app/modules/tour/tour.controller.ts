@@ -19,7 +19,7 @@ const createTourType = catchAsync(
 );
 const getAllTourType = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await tourServices.getAllTourType();
+    const result = await tourServices.getAllTourType(req.query as Record<string,string>);
 
     sendResponse(res, {
       statusCode: httpStatus.ACCEPTED,
@@ -30,6 +30,16 @@ const getAllTourType = catchAsync(
     });
   }
 );
+const getSingleTourType = catchAsync(async (req: Request, res: Response) => {
+  const name = req.params.name;
+  const result = await tourServices.getSingleTourType(name);
+  sendResponse(res, {
+    statusCode: httpStatus.ACCEPTED,
+    success: true,
+    message: "Tour Type Retrieved successfully",
+    data: result,
+  });
+});
 const updateTourType = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -112,6 +122,7 @@ const deleteTour = catchAsync(async (req: Request, res: Response) => {
 export const tourControllers = {
   createTourType,
   getAllTourType,
+  getSingleTourType,
   updateTourType,
   deleteTourType,
   createTour,

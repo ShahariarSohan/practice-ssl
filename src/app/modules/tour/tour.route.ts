@@ -7,13 +7,15 @@ import { tourControllers } from "./tour.controller";
 
 const router = Router()
 //// tour types Api //////
+router.get("/tour-types", tourControllers.getAllTourType);
 router.post(
   "/create-tour-type",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(createTourTypeZodSchema),
   tourControllers.createTourType
 );
-router.get("/tour-types", tourControllers.getAllTourType)
+
+router.get("/tour-types/:name",tourControllers.getSingleTourType)
 router.patch(
   "/tour-types/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),

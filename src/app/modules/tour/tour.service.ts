@@ -3,7 +3,10 @@ import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/appError";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
-import { tourSearchAbleFields } from "./tour.constant";
+import {
+  tourSearchAbleFields,
+  tourTypeSearchAbleFields,
+} from "./tour.constant";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 
 ///tour type services
@@ -17,15 +20,28 @@ const createTourType = async (payload: ITourType) => {
 
   return tourType;
 };
-const getAllTourType = async () => {
-  const tourTypes = await TourType.find({});
-  const totalTours = await TourType.countDocuments();
+const getAllTourType = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(TourType.find(), query);
+  const tourTypes = await queryBuilder
+    .search(tourTypeSearchAbleFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate()
+    .build();
+
+  const meta=await queryBuilder.getMeta()
   return {
-    meta: {
-      total: totalTours,
-    },
     data: tourTypes,
+    meta: meta,
   };
+};
+const getSingleTourType = async (name: string) => {
+  const isTourTypeExist = await TourType.findOne({ name });
+  if (!isTourTypeExist) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Tour Type doesn't Exist");
+  }
+  return isTourTypeExist;
 };
 const updateTourType = async (id: string, payload: ITourType) => {
   const existingTourType = await TourType.findById(id);
@@ -128,6 +144,7 @@ const deleteTour = async (id: string) => {
 export const tourServices = {
   createTourType,
   getAllTourType,
+  getSingleTourType,
   updateTourType,
   deleteTourType,
   createTour,
