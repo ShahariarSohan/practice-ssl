@@ -1,1 +1,2 @@
-export const tourSearchAbleFields = ["title", "location", "description"];
+export const tourSearchAbleFields = ["title","slug", "location", "description"];
+export const tourTypeSearchAbleFields=["name"]
