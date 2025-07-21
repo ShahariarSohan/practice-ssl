@@ -7,6 +7,8 @@ import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { userSearchAbleFields } from "./user.constant";
+
+
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
 
@@ -35,24 +37,33 @@ const createUser = async (payload: Partial<IUser>) => {
 
 const getAllUser = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(User.find(), query);
-  const users =await queryBuilder
+  const users = await queryBuilder
     .search(userSearchAbleFields)
     .filter()
     .sort()
     .fields()
     .paginate()
     .build();
-  const meta=await queryBuilder.getMeta()
+  const meta = await queryBuilder.getMeta();
   return {
     data: users,
     meta: meta,
   };
 };
-const getSingleUser = async (id: string) => {
+const getSingleUser = async (user:JwtPayload, id: string) => {
+ 
   const isUserExist = await User.findById(id);
   if (!isUserExist) {
     throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist");
   }
+
+  if ((user.role === Role.USER || user.role === Role.GUIDE) && user.id !== id) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "You are only authorized to see your own data"
+    );
+  }
+
   return isUserExist;
 };
 const updateUser = async (
