@@ -1,4 +1,5 @@
 
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { NextFunction, Request, Response } from "express";
@@ -7,6 +8,7 @@ import { userServices } from "./user.service";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { JwtPayload } from "jsonwebtoken";
+import { Role } from "./user.interface";
 
 
 
@@ -38,8 +40,9 @@ const getAllUser = catchAsync(
 );
 const getSingleUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const id=req.params.id
-    const result = await userServices.getSingleUser(id);
+    const id = req.params.id
+    const decodedToken= req.user as JwtPayload;
+    const result = await userServices.getSingleUser(decodedToken,id);
     
     sendResponse(res, {
       statusCode: httpStatus.ACCEPTED,

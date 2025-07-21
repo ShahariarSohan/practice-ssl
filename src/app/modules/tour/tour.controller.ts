@@ -31,8 +31,8 @@ const getAllTourType = catchAsync(
   }
 );
 const getSingleTourType = catchAsync(async (req: Request, res: Response) => {
-  const name = req.params.name;
-  const result = await tourServices.getSingleTourType(name);
+  const id = req.params.id;
+  const result = await tourServices.getSingleTourType(id);
   sendResponse(res, {
     statusCode: httpStatus.ACCEPTED,
     success: true,

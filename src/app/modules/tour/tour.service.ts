@@ -36,8 +36,8 @@ const getAllTourType = async (query: Record<string, string>) => {
     meta: meta,
   };
 };
-const getSingleTourType = async (name: string) => {
-  const isTourTypeExist = await TourType.findOne({ name });
+const getSingleTourType = async (id: string) => {
+  const isTourTypeExist = await TourType.findById(id);
   if (!isTourTypeExist) {
     throw new AppError(httpStatus.BAD_REQUEST, "Tour Type doesn't Exist");
   }
