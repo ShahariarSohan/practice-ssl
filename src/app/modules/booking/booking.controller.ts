@@ -19,7 +19,63 @@ const createBooking = catchAsync(
     });
   }
 );
+const getAllBooking = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+        
+    const result = await bookingServices.getAllBooking(req.query as Record<string,string> )
+    
+    sendResponse(res, {
+      statusCode: httpStatus.ACCEPTED,
+      success: true,
+      message: "Booking retrieved Successfully",
+      data: result.data,
+      meta:result.meta,
+    });
+  }
+);
+const getMyBooking = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken=req.user as JwtPayload
+    const result =await bookingServices.getMyBooking(decodedToken.id);
+
+    sendResponse(res, {
+      statusCode: httpStatus.ACCEPTED,
+      success: true,
+      message: "My Booking retrieved  Successfully",
+      data: result,
+    });
+  }
+);
+const getSingleBooking = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+       const bookingId=req.params.bookingId
+       const result=await bookingServices.getSingleBooking(bookingId)
+    sendResponse(res, {
+      statusCode: httpStatus.ACCEPTED,
+      success: true,
+      message: "Booking retrieved Successfully",
+      data: result,
+    });
+  }
+);
+const updateBookingStatus = catchAsync(
+    async (req: Request, res: Response,next:NextFunction) => {
+    const bookingId = req.params.bookingId;
+ const result =await  bookingServices.updateBookingStatus(bookingId,req.body)
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Booking Status Updated Successfully",
+      data: result,
+    });
+  }
+);
+
 
 export const bookingControllers = {
-    createBooking
+  createBooking,
+  getAllBooking,
+  getMyBooking,
+  getSingleBooking,
+  updateBookingStatus,
 }

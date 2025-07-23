@@ -10,6 +10,8 @@ import { Tour } from "../tour/tour.model";
 import { User } from "../user/user.model";
 import { SSLServices } from "../sslCommerz/sslCommerz.sevice";
 import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { bookingSearchableFields } from "./booking.constant";
 const getTransactionId = () => {
   return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 };
@@ -88,7 +90,50 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     throw error;
   }
 };
+const getAllBooking = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(Booking.find(), query);
+  const bookings = await queryBuilder
+    .search(bookingSearchableFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate()
+    .build();
+  const meta = await queryBuilder.getMeta();
+  return {
+    data: bookings,
+    meta:meta,
+    
+  };
+};
+const getMyBooking = async (userId:string) => {
+  const booking = await Booking.findOne({user:userId})
+ if (!booking) {
+   throw new AppError(httpStatus.NOT_FOUND, "Booking Not Found");
+  }
+  return booking;
+};
+const getSingleBooking = async (bookingId: string) => {
+  const booking = await Booking.findById(bookingId)
+  if (!booking) {
+    throw new AppError(httpStatus.NOT_FOUND,"Booking Not Found")
+  }
+  return booking
+}
+const updateBookingStatus = async (bookingId: string,payload:Partial<IBooking>) => {
+ const booking = await Booking.findById(bookingId);
+ if (!booking) {
+   throw new AppError(httpStatus.NOT_FOUND, "Booking Not Found");
+  }
+  
+  const updatedBooking = await Booking.findByIdAndUpdate(bookingId,payload ,{ new: true, runValidators: true })
+  return updatedBooking;
+}
 
 export const bookingServices = {
   createBooking,
+  getAllBooking,
+  getMyBooking,
+  getSingleBooking,
+  updateBookingStatus
 };

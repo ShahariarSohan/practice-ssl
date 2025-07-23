@@ -54,10 +54,38 @@ const cancelPayment = catchAsync(
    
   }
 );
+const getAllPayment = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+    const result = await paymentServices.getAllPayment(req.query as Record<string,string>)
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Payment Retrieved Successful",
+      data: result.data,
+      meta:result.meta
+    });
+  }
+);
+const getSinglePayment = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const transactionId=req.params.transactionId
+    const result = await paymentServices.getSinglePayment(transactionId)
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Payment Retrieved Successful",
+      data: result,
+      
+    });
+  }
+);
 
 export const paymentControllers = {
-    initPayment,
+  initPayment,
     successPayment,
     failPayment,
-    cancelPayment
+  cancelPayment,
+  getAllPayment,
+    getSinglePayment
 }

@@ -30,6 +30,7 @@ const getAllDivision = async (query: Record<string, string>) => {
         meta:meta
     }
 };
+
 const getSingleDivision = async (slug: string) => {
   const division = await Division.findOne({ slug });
   if (!division) {
