@@ -1,9 +1,11 @@
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import httpStatus from "http-status-codes";
 import { NextFunction, Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { tourServices } from "./tour.service";
+import { ITour } from "./tour.interface";
 
 const createTourType = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -64,8 +66,13 @@ const deleteTourType = catchAsync(async (req: Request, res: Response) => {
 /// tour controller
 const createTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await tourServices.createTour(req.body);
-
+   
+    const payload: ITour = {
+      ...req.body,
+      images:(req.files as Express.Multer.File[])?.map(file=>file.path)
+    }
+    const result = await tourServices.createTour(payload);
+    
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
       success: true,
