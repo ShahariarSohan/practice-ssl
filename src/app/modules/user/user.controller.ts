@@ -8,15 +8,18 @@ import { userServices } from "./user.service";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { JwtPayload } from "jsonwebtoken";
-import { Role } from "./user.interface";
+import { IUser, Role } from "./user.interface";
 
 
 
 //sends a function as an argument in catchAsync
 const createUser = catchAsync(async (req: Request, res: Response,next:NextFunction) => {
 
-    
-  const user=await userServices.createUser(req.body)
+  const payload: IUser = {
+    ...req.body,
+    picture:req.file?.path
+    }
+  const user=await userServices.createUser(payload)
    
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
@@ -56,7 +59,10 @@ const getSingleUser = catchAsync(
 const updateUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.id;
-    const payload = req.body;
+    const payload: IUser = {
+      ...req.body,
+      picture:req.file?.path
+    }
    
     const verifiedToken = req.user;
 
