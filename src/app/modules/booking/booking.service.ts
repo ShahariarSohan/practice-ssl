@@ -77,7 +77,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       address: userAddress,
     };
     const sslPayment = await SSLServices.sslPaymentInit(sslPayload);
-
+    
     await session.commitTransaction(); // Transaction Succeed
     session.endSession();
     return {
