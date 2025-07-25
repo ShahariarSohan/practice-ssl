@@ -4,10 +4,15 @@ import { divisionServices } from "./division.service";
 import sendResponse from "../../utils/sendResponse";
 import catchAsync from "../../utils/catchAsync";
 import { NextFunction, Request, Response } from "express";
+import { IDivision } from "./division.interface";
 
 const createDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const division = await divisionServices.createDivision(req.body);
+    const payload: IDivision = {
+      ...req.body,
+      thumbnail: req.file?.path,
+    };
+    const division = await divisionServices.createDivision(payload);
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
@@ -19,7 +24,9 @@ const createDivision = catchAsync(
 );
 const getAllDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await divisionServices.getAllDivision(req.query as Record<string,string>);
+    const result = await divisionServices.getAllDivision(
+      req.query as Record<string, string>
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
@@ -46,7 +53,11 @@ const getSingleDivision = catchAsync(
 const updateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const result = await divisionServices.updateDivision(id,req.body);
+    const payload: IDivision = {
+      ...req.body,
+      thumbnail: req.file?.path,
+    };
+    const result = await divisionServices.updateDivision(id, payload);
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
@@ -66,7 +77,7 @@ const deleteDivision = catchAsync(
       statusCode: httpStatus.ACCEPTED,
       success: true,
       message: "Division deleted Successfully",
-      data:result
+      data: result,
     });
   }
 );
@@ -75,5 +86,5 @@ export const divisionControllers = {
   getAllDivision,
   getSingleDivision,
   updateDivision,
-  deleteDivision
+  deleteDivision,
 };

@@ -12,9 +12,6 @@ import { QueryBuilder } from "../../utils/QueryBuilder";
 import { paymentSearchableFields } from "./payment.constant";
 import { BOOKING_STATUS } from "../booking/booking.interface";
 
-
-
-
 const initPayment = async (bookingId: string) => {
   const payment = await Payment.findOne({ booking: bookingId });
   if (!payment) {

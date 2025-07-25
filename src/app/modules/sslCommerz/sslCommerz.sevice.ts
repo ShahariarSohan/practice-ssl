@@ -40,7 +40,8 @@ const sslPaymentInit = async (payload: ISSLCommerz) => {
             data: data,
             headers:{"Content-Type":"application/x-www-form-urlencoded"}
         })
-        return response.data;
+      return response.data;
+      
     } catch (error:any) {
         console.log("Payment Error Occurred",error)
         throw new AppError(httpStatus.BAD_REQUEST,error.message)
