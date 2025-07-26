@@ -12,9 +12,8 @@ import { SSLServices } from "../sslCommerz/sslCommerz.sevice";
 import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { bookingSearchableFields } from "./booking.constant";
-const getTransactionId = () => {
-  return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-};
+import { getTransactionId } from "../../utils/getTransactionId";
+
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {
   const transactionId = getTransactionId();
 

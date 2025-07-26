@@ -19,6 +19,11 @@ router.post(
   userControllers.createUser
 );
 router.get(
+  "/me",
+  checkAuth(...Object.values(Role)),
+  userControllers.getMe
+);
+router.get(
   "/:id",
   checkAuth(...Object.values(Role)),
   userControllers.getSingleUser

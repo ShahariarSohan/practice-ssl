@@ -9,7 +9,6 @@ import { QueryBuilder } from "../../utils/QueryBuilder";
 import { userSearchAbleFields } from "./user.constant";
 import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
-
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
 
@@ -51,9 +50,16 @@ const getAllUser = async (query: Record<string, string>) => {
     meta: meta,
   };
 };
-const getSingleUser = async (user:JwtPayload, id: string) => {
- 
-  const isUserExist = await User.findById(id);
+const getMe = async (id: string) => {
+  const isUserExist = await User.findById(id).select("-password");
+  if (!isUserExist) {
+    throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist");
+  }
+
+  return isUserExist;
+};
+const getSingleUser = async (user: JwtPayload, id: string) => {
+  const isUserExist = await User.findById(id).select("-password");
   if (!isUserExist) {
     throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist");
   }
@@ -67,6 +73,7 @@ const getSingleUser = async (user:JwtPayload, id: string) => {
 
   return isUserExist;
 };
+
 const updateUser = async (
   userId: string,
   payload: Partial<IUser>,
@@ -102,13 +109,14 @@ const updateUser = async (
     runValidators: true,
   });
   if (payload.picture && isUserExist.picture) {
-    await deleteImageFromCloudinary(isUserExist.picture)
+    await deleteImageFromCloudinary(isUserExist.picture);
   }
   return newUpdatedUser;
 };
 export const userServices = {
   createUser,
   getAllUser,
+  getMe,
   getSingleUser,
   updateUser,
 };
