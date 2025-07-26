@@ -41,6 +41,21 @@ const getAllUser = catchAsync(
    })
   }
 );
+const getMe = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+    const decodedToken= req.user as JwtPayload;
+    const result = await userServices.getMe(decodedToken.id);
+    
+    sendResponse(res, {
+      statusCode: httpStatus.ACCEPTED,
+      success: true,
+      message: "Your Profile Retrieved Successfully",
+      data: result,
+      
+   })
+  }
+);
 const getSingleUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
@@ -82,6 +97,7 @@ const updateUser = catchAsync(
 export const userControllers = {
   createUser,
   getAllUser,
+  getMe,
   getSingleUser,
   updateUser
 }
