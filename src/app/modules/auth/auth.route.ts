@@ -22,5 +22,5 @@ router.get("/google", async (req: Request, res: Response, next: NextFunction) =>
     const redirect=req.query.redirect ||"/"
     passport.authenticate("google", { scope: ["profile", "email"], state: redirect as string })(req, res, next)
 })
-router.get("/google/callback",passport.authenticate("google",{failureRedirect:`${envVars.FRONTEND_URL}/login?error=There is some issue in your account.Please contact with our support team`}),authControllers.googleCallbackController)
+router.get("/google/callback",passport.authenticate("google",{failureRedirect:`${envVars.FRONTEND_URL}/login?error= Issue in your account.Please contact with Support`}),authControllers.googleCallbackController)
 export const authRoutes = router;
