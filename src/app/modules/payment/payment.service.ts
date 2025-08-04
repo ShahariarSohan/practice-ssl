@@ -11,6 +11,12 @@ import { SSLServices } from "../sslCommerz/sslCommerz.sevice";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { paymentSearchableFields } from "./payment.constant";
 import { BOOKING_STATUS } from "../booking/booking.interface";
+import { generatePdf, IInvoiceData } from "../../utils/generatePdf";
+import { ITour } from "../tour/tour.interface";
+import { IUser } from "../user/user.interface";
+import { sendEmail } from "../../utils/sendEmail";
+
+
 
 const initPayment = async (bookingId: string) => {
   const payment = await Payment.findOne({ booking: bookingId });
@@ -37,37 +43,71 @@ const initPayment = async (bookingId: string) => {
 };
 const successPayment = async (query: Record<string, string>) => {
   const session = await Booking.startSession();
-  session.startTransaction();
+
   try {
+    session.startTransaction();
     const updatedPayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       {
         status: PAYMENT_STATUS.PAID,
       },
-      { runValidators: true, session }
+      {new:true, runValidators: true, session }
     );
-
-    await Booking.findByIdAndUpdate(
+    if (!updatedPayment) {
+      throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
+    }
+    const updatedBooking = await Booking.findByIdAndUpdate(
       updatedPayment?.booking,
-      { status:BOOKING_STATUS.COMPLETE },
-      { runValidators: true, session }
-    );
+      { status: BOOKING_STATUS.COMPLETE },
+      { new: true, runValidators: true, session }
+    )
+      .populate("tour", "title")
+      .populate("user", "name email");
+    if (!updatedBooking) {
+      throw new AppError(httpStatus.NOT_FOUND, "booking not found");
+    }
+    const invoiceData: IInvoiceData = {
+      bookingDate: updatedBooking.createdAt as Date,
+      guestCount: updatedBooking.guestCount,
+      totalAmount: updatedPayment.amount,
+      tourTitle: (updatedBooking.tour as unknown as ITour).title,
+      userName: (updatedBooking.user as unknown as IUser).name,
+      transactionId: updatedPayment.transactionId,
+      paymentId:updatedPayment._id 
+    };
+    const pdfBuffer = await generatePdf(invoiceData)
+    await sendEmail({
+      to: (updatedBooking.user as unknown as IUser).email,
+      subject: "Your Booking Invoice",
+      templateName: "invoice",
+      templateData: invoiceData,
+      attachments: [
+        {
+          filename: "invoice.pdf",
+          content: pdfBuffer,
+          contentType:"application/pdf",
+        }
+      ]
+    });
     await session.commitTransaction();
-    session.endSession();
+   
     return {
       success: true,
       message: "Payment completed successfully",
     };
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
+
     throw error;
+  } finally {
+    session.endSession();
   }
 };
 const failPayment = async (query: Record<string, string>) => {
   const session = await Booking.startSession();
-  session.startTransaction();
+
   try {
+    session.startTransaction();
     const updatedPayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       { status: PAYMENT_STATUS.FAILED },
@@ -77,21 +117,24 @@ const failPayment = async (query: Record<string, string>) => {
       status: BOOKING_STATUS.FAILED,
     });
     await session.commitTransaction();
-    session.endSession();
+
     return {
       success: false,
       message: "Payment Failed",
     };
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
+
     throw error;
+  } finally {
+    session.endSession();
   }
 };
 const cancelPayment = async (query: Record<string, string>) => {
   const session = await Booking.startSession();
-  session.startTransaction();
+
   try {
+    session.startTransaction();
     const updatedPayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       { status: PAYMENT_STATUS.CANCELLED },
@@ -101,15 +144,17 @@ const cancelPayment = async (query: Record<string, string>) => {
       status: BOOKING_STATUS.CANCEL,
     });
     await session.commitTransaction();
-    session.endSession();
+
     return {
       success: false,
       message: "Payment Cancelled",
     };
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
+
     throw error;
+  } finally {
+    session.endSession();
   }
 };
 const getAllPayment = async (query: Record<string, string>) => {
@@ -121,24 +166,24 @@ const getAllPayment = async (query: Record<string, string>) => {
     .fields()
     .paginate()
     .build();
-  const meta = await queryBuilder.getMeta()
+  const meta = await queryBuilder.getMeta();
   return {
     data: payments,
-    meta:meta
-  }
+    meta: meta,
+  };
 };
 const getSinglePayment = async (transactionId: string) => {
-  const payment = await Payment.findOne({ transactionId: transactionId })
+  const payment = await Payment.findOne({ transactionId: transactionId });
   if (!payment) {
-    throw new AppError(httpStatus.NOT_FOUND,"Payment not found")
+    throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
   }
-  return payment
-}
+  return payment;
+};
 export const paymentServices = {
   initPayment,
   successPayment,
   failPayment,
   cancelPayment,
   getAllPayment,
-  getSinglePayment
+  getSinglePayment,
 };
