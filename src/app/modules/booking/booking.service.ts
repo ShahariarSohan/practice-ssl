@@ -18,8 +18,9 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
   const transactionId = getTransactionId();
 
   const session = await Booking.startSession();
-  session.startTransaction();
+
   try {
+    session.startTransaction();
     const user = await User.findById(userId);
 
     if (!user?.phone || !user?.address) {
@@ -44,6 +45,13 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       ],
       { session }
     );
+    //store bookingIds in user db
+    // const bookingIds = [...(user.bookings as any), booking[0]._id];
+    // await User.findByIdAndUpdate(
+    //   user._id,
+    //   { bookings: bookingIds },
+    //   { runValidators: true, session }
+    // );
     const payment = await Payment.create(
       [
         {
@@ -76,17 +84,19 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       address: userAddress,
     };
     const sslPayment = await SSLServices.sslPaymentInit(sslPayload);
-    
+
     await session.commitTransaction(); // Transaction Succeed
-    session.endSession();
+
     return {
       paymentURL: sslPayment.GatewayPageURL,
       booking: updatedBooking,
     };
   } catch (error) {
     await session.abortTransaction(); // Rollback
-    session.endSession();
+
     throw error;
+  } finally {
+    session.endSession();
   }
 };
 const getAllBooking = async (query: Record<string, string>) => {
@@ -101,38 +111,43 @@ const getAllBooking = async (query: Record<string, string>) => {
   const meta = await queryBuilder.getMeta();
   return {
     data: bookings,
-    meta:meta,
-    
+    meta: meta,
   };
 };
-const getMyBooking = async (userId:string) => {
-  const booking = await Booking.findOne({user:userId})
- if (!booking) {
-   throw new AppError(httpStatus.NOT_FOUND, "Booking Not Found");
+const getMyBooking = async (userId: string) => {
+  const booking = await Booking.findOne({ user: userId });
+  if (!booking) {
+    throw new AppError(httpStatus.NOT_FOUND, "Booking Not Found");
   }
   return booking;
 };
 const getSingleBooking = async (bookingId: string) => {
-  const booking = await Booking.findById(bookingId)
+  const booking = await Booking.findById(bookingId);
   if (!booking) {
-    throw new AppError(httpStatus.NOT_FOUND,"Booking Not Found")
+    throw new AppError(httpStatus.NOT_FOUND, "Booking Not Found");
   }
-  return booking
-}
-const updateBookingStatus = async (bookingId: string,payload:Partial<IBooking>) => {
- const booking = await Booking.findById(bookingId);
- if (!booking) {
-   throw new AppError(httpStatus.NOT_FOUND, "Booking Not Found");
+  return booking;
+};
+const updateBookingStatus = async (
+  bookingId: string,
+  payload: Partial<IBooking>
+) => {
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    throw new AppError(httpStatus.NOT_FOUND, "Booking Not Found");
   }
-  
-  const updatedBooking = await Booking.findByIdAndUpdate(bookingId,payload ,{ new: true, runValidators: true })
+
+  const updatedBooking = await Booking.findByIdAndUpdate(bookingId, payload, {
+    new: true,
+    runValidators: true,
+  });
   return updatedBooking;
-}
+};
 
 export const bookingServices = {
   createBooking,
   getAllBooking,
   getMyBooking,
   getSingleBooking,
-  updateBookingStatus
+  updateBookingStatus,
 };

@@ -43,7 +43,7 @@ passport.use(
         );
         if (isGoogleAuthenticated && !isUserExist.password) {
           return done(
-            "You are already google logged in so if you want to login with email and password ,at first you have to login with google and then set a password then you can login with email and password"
+            "You are already google so you have to login with google and then set a password "
           );
         }
         const isPasswordMatched = await bcrypt.compare(

@@ -6,9 +6,6 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { tourServices } from "./tour.service";
 import { ITour } from "./tour.interface";
-
-
-
 const createTourType = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result = await tourServices.createTourType(req.body);
