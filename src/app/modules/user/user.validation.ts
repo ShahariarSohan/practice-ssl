@@ -40,17 +40,6 @@ export const updateUserZodSchema = z.object({
     .min(5, { message: "Name must be  at least 5 characters" })
     .max(50, { message: "Name must be maximum of 50 characters" })
     .optional(),
-  password: z
-    .string({ invalid_type_error: " Password must be string" })
-    .min(8, { message: "Password must be at least 8 characters" })
-    .regex(/.*[A-Z].*/, {
-      message: `Password must be at least 1 uppercase letter`,
-    })
-    .regex(/.*\d.*/, { message: `Password must be at least 1 number` })
-    .regex(/[!@#$%^&*?]/, {
-      message: `Password must be at least 1 special character`,
-    })
-    .optional(),
   isDeleted: z
     .boolean({ invalid_type_error: "isDeleted must be true or false" })
     .optional(),

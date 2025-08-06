@@ -1,3 +1,4 @@
+/* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status-codes";
 
@@ -15,8 +16,7 @@ import { generatePdf, IInvoiceData } from "../../utils/generatePdf";
 import { ITour } from "../tour/tour.interface";
 import { IUser } from "../user/user.interface";
 import { sendEmail } from "../../utils/sendEmail";
-
-
+import { uploadBufferToCloudinary } from "../../config/cloudinary.config";
 
 const initPayment = async (bookingId: string) => {
   const payment = await Payment.findOne({ booking: bookingId });
@@ -51,7 +51,7 @@ const successPayment = async (query: Record<string, string>) => {
       {
         status: PAYMENT_STATUS.PAID,
       },
-      {new:true, runValidators: true, session }
+      { new: true, runValidators: true, session }
     );
     if (!updatedPayment) {
       throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
@@ -73,9 +73,24 @@ const successPayment = async (query: Record<string, string>) => {
       tourTitle: (updatedBooking.tour as unknown as ITour).title,
       userName: (updatedBooking.user as unknown as IUser).name,
       transactionId: updatedPayment.transactionId,
-      paymentId:updatedPayment._id 
+      paymentId: updatedPayment._id,
     };
-    const pdfBuffer = await generatePdf(invoiceData)
+    const pdfBuffer = await generatePdf(invoiceData);
+    const cloudinaryResult = await uploadBufferToCloudinary(
+      pdfBuffer,
+      "invoice"
+    );
+    if (!cloudinaryResult) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Error occurred during pdf upload"
+      );
+    }
+    await Payment.findByIdAndUpdate(
+      updatedPayment._id,
+      { invoiceUrl: cloudinaryResult?.secure_url },
+      { runValidators: true, session }
+    );
     await sendEmail({
       to: (updatedBooking.user as unknown as IUser).email,
       subject: "Your Booking Invoice",
@@ -85,12 +100,12 @@ const successPayment = async (query: Record<string, string>) => {
         {
           filename: "invoice.pdf",
           content: pdfBuffer,
-          contentType:"application/pdf",
-        }
-      ]
+          contentType: "application/pdf",
+        },
+      ],
     });
     await session.commitTransaction();
-   
+
     return {
       success: true,
       message: "Payment completed successfully",
@@ -179,6 +194,21 @@ const getSinglePayment = async (transactionId: string) => {
   }
   return payment;
 };
+const getInvoiceDownloadUrl = async (paymentId: string, userId: string) => {
+  const isBookingExist = await Booking.findOne({ user: userId });
+  if (!isBookingExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "Booking not found");
+  }
+  const payment = await Payment.findById(paymentId);
+  if (!payment) {
+    throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
+  }
+
+  if (!isBookingExist?.payment || !isBookingExist.payment.equals(payment._id)) {
+    throw new AppError(httpStatus.BAD_REQUEST, "This is an invalid paymentId");
+  }
+  return payment.invoiceUrl;
+};
 export const paymentServices = {
   initPayment,
   successPayment,
@@ -186,4 +216,5 @@ export const paymentServices = {
   cancelPayment,
   getAllPayment,
   getSinglePayment,
+  getInvoiceDownloadUrl,
 };
