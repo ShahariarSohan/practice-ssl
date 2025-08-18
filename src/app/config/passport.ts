@@ -51,7 +51,7 @@ passport.use(
           isUserExist?.password as string
         );
         if (!isPasswordMatched) {
-          return done(null, false, { message: "Password doesn't match " });
+          return done(null, false, { message: "Password doesn't match" });
         }
         return done(null, isUserExist);
       } catch (error) {
