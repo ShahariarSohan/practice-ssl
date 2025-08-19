@@ -8,8 +8,7 @@ import { Payment } from "../payment/payment.model";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { Tour } from "../tour/tour.model";
 import { User } from "../user/user.model";
-import { SSLServices } from "../sslCommerz/sslCommerz.sevice";
-import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
+
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { bookingSearchableFields } from "./booking.constant";
 import { getTransactionId } from "../../utils/getTransactionId";
@@ -63,34 +62,11 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       ],
       { session }
     );
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      booking[0]._id,
-      { payment: payment[0]._id },
-      { new: true, runValidators: true, session }
-    )
-      .populate("user", "name email phone address")
-      .populate("tour", "title costFrom")
-      .populate("payment");
-    const userName = (updatedBooking?.user as any).name;
-    const userEmail = (updatedBooking?.user as any).email;
-    const userPhoneNumber = (updatedBooking?.user as any).phone;
-    const userAddress = (updatedBooking?.user as any).address;
-    const sslPayload: ISSLCommerz = {
-      amount: amount,
-      transactionId: transactionId,
-      name: userName,
-      email: userEmail,
-      phoneNumber: userPhoneNumber,
-      address: userAddress,
-    };
-    const sslPayment = await SSLServices.sslPaymentInit(sslPayload);
+  
 
     await session.commitTransaction(); // Transaction Succeed
 
-    return {
-      paymentURL: sslPayment.GatewayPageURL,
-      booking: updatedBooking,
-    };
+    return {};
   } catch (error) {
     await session.abortTransaction(); // Rollback
 

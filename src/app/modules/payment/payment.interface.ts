@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Types } from "mongoose";
+import { Types } from "mongoose"
 
 export enum PAYMENT_STATUS {
   PAID = "PAID",
